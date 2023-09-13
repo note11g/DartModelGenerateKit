@@ -1,6 +1,6 @@
 # DartModelGenerateKit
 
-[![pub package](https://img.shields.io/pub/v/view_model_kit.svg?color=4285F4)](https://pub.dev/packages/model_gen_kit)
+[![pub package](https://img.shields.io/pub/v/model_gen_kit.svg?color=4285F4)](https://pub.dev/packages/model_gen_kit)
 
 ### Install
 1. add dependency on pubspec.yaml
