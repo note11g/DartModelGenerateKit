@@ -4,7 +4,11 @@ import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil.findPatternOnce
 
 data class ModelArgument(
-    val name: String, val type: ModelArgumentType, val isRequired: Boolean, val defaultValue: String?
+    val name: String,
+    val type: ModelArgumentType,
+    val isRequired: Boolean,
+    val defaultValue: String?,
+    val key: String
 ) {
     companion object {
         fun parseRawArgument(rawArg: String): ModelArgument? {
@@ -13,6 +17,12 @@ data class ModelArgument(
 
             val defaultValue = getDefaultValue(cleanedCode)
             if (defaultValue != null) cleanedCode = cleanUpDefaultValue(cleanedCode)
+
+            val customKey = getCustomKeyValue(cleanedCode)
+            if (customKey != null) {
+                cleanedCode = cleanUpCustomKeyValue(cleanedCode)
+                println(customKey)
+            }
 
             val isRequired = detectRequiredKeyword(cleanedCode)
             if (isRequired) {
@@ -26,7 +36,7 @@ data class ModelArgument(
             val argName = cleanedCode.trim()
             if (!DartLangParseUtil.isValidClassOrVariable(argName)) throw Exception("Invalid argument name: $argName")
 
-            return ModelArgument(argName, type, isRequired, defaultValue)
+            return ModelArgument(argName, type, isRequired, defaultValue, customKey ?: argName)
         }
 
         private fun getDefaultValue(input: String): String? {
@@ -36,6 +46,15 @@ data class ModelArgument(
 
         private fun cleanUpDefaultValue(input: String): String {
             return input.replace("@DefaultVal\\((.*?)\\)".toRegex(), "").trim()
+        }
+
+        private fun getCustomKeyValue(input: String): String? {
+            val pattern = "@CustomKey\\(\"(.*?)\"\\)".toRegex()
+            return pattern.findPatternOnce(input)
+        }
+
+        private fun cleanUpCustomKeyValue(input: String): String {
+            return input.replace("@CustomKey\\(\"(.*?)\"\\)".toRegex(), "").trim()
         }
 
         private fun detectRequiredKeyword(input: String): Boolean {

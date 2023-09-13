@@ -16,9 +16,7 @@ object DartLangParseUtil {
     fun findModelArgs(dartCode: String, className: String): List<ModelArgument> {
         val constructorPart = getModelFindRegex(className).findPatternOnce(dartCode) ?: return emptyList()
         return constructorPart.split(',').mapNotNull {
-            val res = ModelArgument.parseRawArgument(it)
-            println(res)
-            res
+            ModelArgument.parseRawArgument(it)
         }
     }
 

@@ -11,9 +11,8 @@ object ModelExtensionGenerator {
         }
 
         val patternMatchingKeyVariableSection = args.joinToString(",\n") {
-            val jsonKey = it.name // TODO : jsonKey changeable
             val type = it.type.dartTypeOnFromPatternMatching
-            "\"${jsonKey}\": $type ${it.name}"
+            "\"${it.key}\": $type ${it.name}"
         }
 
         val modelConstructorCallArgsSection = args.joinToString(",\n") {
@@ -34,8 +33,7 @@ ${modelConstructorCallArgsSection.addTabIndentation(3)},
 }"""
 
         val jsonKeyValueSection = args.joinToString(",\n") {
-            val jsonKey = it.name // TODO : jsonKey changeable
-            "\"${jsonKey}\": ${it.type.getToJsonValue(it.name)}"
+            "\"${it.key}\": ${it.type.getToJsonValue(it.name)}"
         }
 
         val toJsonSection = """Map<String, dynamic> toJson() => {
