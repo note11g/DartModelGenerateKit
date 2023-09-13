@@ -3,15 +3,17 @@ package dev.note11.dart_model_gen_kit.dartmodelgeneratekit.actions
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ModelInfo
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil.removeCodeComments
 
 class GenerateAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
-        val clearedEditorText = removeCodeComments(editor.document.text)
+        val document = e.getData(CommonDataKeys.EDITOR)?.document ?: return
+        FileDocumentManager.getInstance().saveDocument(document)
+        val clearedEditorText = removeCodeComments(document.text)
 
         val modelInfo = parseModelInfo(clearedEditorText) ?: return
         println(modelInfo.toString() + "\n")
@@ -20,12 +22,15 @@ class GenerateAction : AnAction() {
                 ModelSubClassGenerator.invoke(modelInfo) + "\n\n" +
                 ModelExtensionGenerator.invoke(modelInfo)
 
-        runWriteAction {
-            var originalText = editor.document.text
+        runUndoTransparentWriteAction {
+            var originalText = document.text
             if (originalText.contains(commentSectionText)) {
                 originalText = originalText.substringBefore(commentSectionText)
             }
-            editor.document.setText(originalText + generatedCodes)
+
+            document.setText(originalText + generatedCodes)
+
+            FileDocumentManager.getInstance().saveDocument(document)
         }
     }
 
