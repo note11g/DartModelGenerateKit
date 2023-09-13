@@ -22,12 +22,9 @@ class GenerateAction : AnAction() {
         val generatedCode = generateModelExtendsCode(modelInfo)
 
         runUndoTransparentWriteAction {
-            var originalText = document.text
-            if (originalText.contains(commentSectionText)) {
-                originalText = originalText.substringBefore(commentSectionText)
-            }
             document.setText(originalCode + generatedCode)
             saveDocument(document)
+            openAlert("Model Generated! 😉", e)
         }
     }
 
@@ -37,6 +34,14 @@ class GenerateAction : AnAction() {
 
     private fun saveDocument(document: Document) {
         FileDocumentManager.getInstance().saveDocument(document)
+    }
+
+    private fun openAlert(message: String, e: AnActionEvent) {
+        val notification = NotificationGroupManager.getInstance()
+            .getNotificationGroup("Dart Model Gen Alert")
+            .createNotification(message, NotificationType.INFORMATION)
+            .setImportant(false)
+        notification.notify(e.project)
     }
 
     private fun parseModelInfo(fullCodes: String): ModelInfo? {

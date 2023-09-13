@@ -20,17 +20,20 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>Dart</depends>
 
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <liveTemplateMacro
-                implementation="dev.note11.dart_model_gen_kit.dartmodelgeneratekit.FullModelMacro"/>
+        <notificationGroup id="Dart Model Gen Alert"
+                           displayType="BALLOON"
+                           key="notification.dartmodelgen.alert"/>
         <defaultLiveTemplates file="/liveTemplates/DartModelGen.xml"/>
         <liveTemplateContext
                 contextId="DartModelGen"
                 implementation="dev.note11.dart_model_gen_kit.dartmodelgeneratekit.livetemplate.DartModelGenLiveTemplateContext"/>
     </extensions>
+
     <actions>
         <action id="dartmodelgenkit.gen"
                 class="dev.note11.dart_model_gen_kit.dartmodelgeneratekit.actions.GenerateAction"
