@@ -1,37 +1,42 @@
 package dev.note11.dart_model_gen_kit.dartmodelgeneratekit.actions
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ModelInfo
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil
-import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil.removeCodeComments
 
 class GenerateAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        val document = e.getData(CommonDataKeys.EDITOR)?.document ?: return
-        FileDocumentManager.getInstance().saveDocument(document)
-        val clearedEditorText = removeCodeComments(document.text)
-
+        val document = getDocument(e) ?: return
+        saveDocument(document)
+        val clearedEditorText = DartLangParseUtil.removeCodeComments(document.text)
         val modelInfo = parseModelInfo(clearedEditorText) ?: return
-        println(modelInfo.toString() + "\n")
 
-        val generatedCodes = commentSectionText +
-                ModelSubClassGenerator.invoke(modelInfo) + "\n\n" +
-                ModelExtensionGenerator.invoke(modelInfo)
+        val originalCode = originalModelCodeWithoutGeneratedCodes(document.text)
+        val generatedCode = generateModelExtendsCode(modelInfo)
 
         runUndoTransparentWriteAction {
             var originalText = document.text
             if (originalText.contains(commentSectionText)) {
                 originalText = originalText.substringBefore(commentSectionText)
             }
-
-            document.setText(originalText + generatedCodes)
-
-            FileDocumentManager.getInstance().saveDocument(document)
+            document.setText(originalCode + generatedCode)
+            saveDocument(document)
         }
+    }
+
+    private fun getDocument(e: AnActionEvent): Document? {
+        return e.getData(CommonDataKeys.EDITOR)?.document
+    }
+
+    private fun saveDocument(document: Document) {
+        FileDocumentManager.getInstance().saveDocument(document)
     }
 
     private fun parseModelInfo(fullCodes: String): ModelInfo? {
@@ -39,6 +44,25 @@ class GenerateAction : AnAction() {
         val args = DartLangParseUtil.findModelArgs(fullCodes, className)
         if (args.isEmpty()) return null
         return ModelInfo(className, args)
+    }
+
+    private fun generateModelExtendsCode(modelInfo: ModelInfo): String {
+        return commentSectionText +
+                ModelSubClassGenerator.invoke(modelInfo) + "\n\n" +
+                ModelExtensionGenerator.invoke(modelInfo)
+    }
+
+    private fun originalModelCodeWithoutGeneratedCodes(fullCodes: String): String {
+        if (alreadyCodeGenerated(fullCodes)) return removeGeneratedCodes(fullCodes)
+        return fullCodes
+    }
+
+    private fun alreadyCodeGenerated(fullCodes: String): Boolean {
+        return fullCodes.contains(commentSectionText)
+    }
+
+    private fun removeGeneratedCodes(fullCodes: String): String {
+        return fullCodes.substringBefore(commentSectionText)
     }
 
     companion object {

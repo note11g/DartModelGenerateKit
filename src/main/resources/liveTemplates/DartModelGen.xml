@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templateSet group="DartModelGenKit">
     <template name="gm"
-              value="class $ModelName$ with _$ModelName$Extension {&#10;  const factory $ModelName$({&#10;    $Args$&#10;  }) = _$ModelName$;&#10;&#10;  const $ModelName$._();&#10;&#10;  factory $ModelName$.fromJson(json) = _$ModelName$.fromJson;&#10;}&#10;"
+              value="import 'package:model_gen_kit/model_gen_kit.dart';&#10;&#10;class $ModelName$ with _$ModelName$Extension {&#10;  const factory $ModelName$({&#10;    $Args$&#10;  }) = _$ModelName$;&#10;&#10;  const $ModelName$._();&#10;&#10;  factory $ModelName$.fromJson(json) = _$ModelName$.fromJson;&#10;}&#10;"
               description="Generate Dart Model code with file name" toReformat="false" toShortenFQNames="true">
         <variable name="ModelName" expression="capitalize(camelCase(fileNameWithoutExtension()))" defaultValue=""
                   alwaysStopAt="true"/>
