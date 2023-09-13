@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templateSet group="DartModelGenKit">
-    <template
-            name="mx"
-            value="$A$"
-            description="Generate Dart Model extension code"
-            toReformat="false"
-            toShortenFQNames="true">
-        <variable name="A" expression="fullModel()" defaultValue="" alwaysStopAt="true"/>
-        <context>
-            <option name="DART" value="true"/>
-            <!--            <option name="DART_STATEMENT" value="false"/>-->
-            <!--            <option name="DART_TOPLEVEL" value="false"/>-->
-        </context>
-    </template>
     <template name="gm"
               value="class $ModelName$ with _$ModelName$Extension {&#10;  const factory $ModelName$({&#10;    $Args$&#10;  }) = _$ModelName$;&#10;&#10;  const $ModelName$._();&#10;&#10;  factory $ModelName$.fromJson(json) = _$ModelName$.fromJson;&#10;}&#10;"
               description="Generate Dart Model code with file name" toReformat="false" toShortenFQNames="true">
