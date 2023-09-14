@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.note11.dart_model_gen_kit"
-version = "0.1.1"
+version = "0.1.2"
 
 repositories {
     mavenCentral()
@@ -31,7 +31,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("221")
+        sinceBuild.set("223")
+        untilBuild.set("232.*")
     }
 
     signPlugin {
