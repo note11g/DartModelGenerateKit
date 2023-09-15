@@ -10,6 +10,7 @@ object ModelExtensionGenerator {
         val toJsonSection = createToJsonSection(modelInfo)
         val copyWithSection = generateCopyWithSection(modelInfo)
         val toStringSection = generateToStringSection(modelInfo)
+        val equalitySection = generateEqualitySection(modelInfo)
 
         return@with """mixin _${className}Extension {
 ${variablesSection.addTabIndentation()}
@@ -19,6 +20,8 @@ ${fromJsonSection.addTabIndentation()}
 ${toJsonSection.addTabIndentation()}
 
 ${copyWithSection.addTabIndentation()}
+
+${equalitySection.addTabIndentation()}
 
 ${toStringSection.addTabIndentation()}
 }
@@ -61,9 +64,9 @@ ${modelConstructorCallArgsSection.addTabIndentation(3)},
         }
     }
 
-    private fun createToJsonSection(modelInfo: ModelInfo): String = with(modelInfo) {
+    private fun createToJsonSection(modelInfo: ModelInfo): String {
         val jsonKeyValueSection = generateJsonKeyValueSection(modelInfo)
-        """Map<String, dynamic> toJson() => {
+        return """Map<String, dynamic> toJson() => {
 ${jsonKeyValueSection.addTabIndentation(3)},
     };"""
     }
@@ -99,10 +102,30 @@ ${copyWithConstructorParamsSection.addTabIndentation(3)},
         }
     }
 
-    private fun generateToStringArgsSection(modelInfo: ModelInfo): String = with(modelInfo) {
-        args.joinToString(", ") {
-            "${it.name}: \$${it.name}"
+    private fun generateEqualitySection(modelInfo: ModelInfo): String {
+        return generateEqualsSection(modelInfo) + "\n\n" + generateHashCodeSection(modelInfo)
+    }
+
+    private fun generateEqualsSection(modelInfo: ModelInfo): String = with(modelInfo) {
+        val codes = args.joinToString(" && \n") {
+            "other.${it.name} == ${it.name}"
         }
+        """@override
+bool operator ==(Object other) =>
+    identical(this, other) ||
+${("other is $className &&\nruntimeType == other.runtimeType &&").addTabIndentation(4)}
+${codes.addTabIndentation(4)};
+"""
+    }
+
+    private fun generateHashCodeSection(modelInfo: ModelInfo): String = with(modelInfo) {
+        val codes = args.joinToString(" ^\n") {
+            "${it.name}.hashCode"
+        }
+
+        """@override
+int get hashCode =>
+${codes.addTabIndentation(2)};"""
     }
 
     private fun generateToStringSection(modelInfo: ModelInfo): String = with(modelInfo) {
@@ -111,5 +134,11 @@ ${copyWithConstructorParamsSection.addTabIndentation(3)},
         """@override
 String toString() =>
     '$className{${toStringArgsSection}}';"""
+    }
+
+    private fun generateToStringArgsSection(modelInfo: ModelInfo): String = with(modelInfo) {
+        args.joinToString(", ") {
+            "${it.name}: \$${it.name}"
+        }
     }
 }
