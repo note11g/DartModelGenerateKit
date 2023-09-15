@@ -21,7 +21,7 @@ ${fromJsonFactoryConstructorSection.addTabIndentation()}
 
     private fun generateVariablesSection(modelInfo: ModelInfo) = with(modelInfo) {
         args.joinToString("\n") {
-            "@override\nfinal ${it.type.rawDartTypeString} ${it.name};"
+            "@override\nfinal ${it.type.typeString} ${it.name};"
         }
     }
 
@@ -34,13 +34,13 @@ ${fromJsonFactoryConstructorSection.addTabIndentation()}
         args.joinToString("\n") {
             var res = "this.${it.name}"
             if (it.isRequired) res = "required $res"
-            if (it.defaultValue != null) res = "$res = ${it.defaultValue}"
+            if (it.actualDefaultValue != null) res = "$res = ${it.actualDefaultValue}"
             return@joinToString "$res,"
         }
     }
 
     private fun generateFromJsonFactoryConstructorSection(modelInfo: ModelInfo) = with(modelInfo) {
-        "factory _$className.fromJson(json) =>\n" +
+        "factory _$className.fromJson(Object json) =>\n" +
                 "\t\t_${className}Extension.createModelFromJson(json);"
     }
 }

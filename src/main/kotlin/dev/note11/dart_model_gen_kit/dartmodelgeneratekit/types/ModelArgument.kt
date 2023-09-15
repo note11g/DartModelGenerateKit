@@ -7,9 +7,16 @@ data class ModelArgument(
     val name: String,
     val type: ModelArgumentType,
     val isRequired: Boolean,
-    val defaultValue: String?,
-    val key: String
+    private val defaultValue: String?,
+    val key: String,
 ) {
+
+    val actualDefaultValue: String?
+        get() = defaultValue?.run {
+            if (defaultValue.startsWith("[")) return "const $defaultValue"
+            else return defaultValue
+        }
+
     companion object {
         fun parseRawArgument(rawArg: String): ModelArgument? {
             var cleanedCode = rawArg.trim()
@@ -19,10 +26,7 @@ data class ModelArgument(
             if (defaultValue != null) cleanedCode = cleanUpDefaultValue(cleanedCode)
 
             val customKey = getCustomKeyValue(cleanedCode)
-            if (customKey != null) {
-                cleanedCode = cleanUpCustomKeyValue(cleanedCode)
-                println(customKey)
-            }
+            if (customKey != null) cleanedCode = cleanUpCustomKeyValue(cleanedCode)
 
             val isRequired = detectRequiredKeyword(cleanedCode)
             if (isRequired) {
@@ -30,11 +34,11 @@ data class ModelArgument(
                 if (defaultValue != null) throw Exception("Required argument cannot have default value")
             }
 
-            val type = getType(cleanedCode)
-            cleanedCode = cleanUpType(cleanedCode)
-
-            val argName = cleanedCode.trim()
+            val argName = getArgName(cleanedCode)
             if (!DartLangParseUtil.isValidClassOrVariable(argName)) throw Exception("Invalid argument name: $argName")
+            cleanedCode = cleanUpArgName(cleanedCode, argName)
+
+            val type = getType(cleanedCode)
 
             return ModelArgument(argName, type, isRequired, defaultValue, customKey ?: argName)
         }
@@ -65,14 +69,16 @@ data class ModelArgument(
             return input.replace("required ", "").trim()
         }
 
-        private fun getType(input: String): ModelArgumentType {
-            val typeString = input.split(' ').firstOrNull() ?: throw Exception("Not found type")
-            return ModelArgumentType.parse(typeString) ?: throw Exception("Unsupported type: $typeString")
+        private fun getArgName(input: String): String {
+            return input.split(' ').lastOrNull() ?: throw Exception("Not found argument name")
         }
 
-        private fun cleanUpType(input: String): String {
-            val typeString = input.split(' ').first()
-            return input.replace(typeString, "").trim()
+        private fun cleanUpArgName(input: String, argName: String): String {
+            return input.replace(argName, "").trim()
+        }
+
+        private fun getType(input: String): ModelArgumentType {
+            return ModelArgumentType.parse(input.trim())
         }
     }
 }

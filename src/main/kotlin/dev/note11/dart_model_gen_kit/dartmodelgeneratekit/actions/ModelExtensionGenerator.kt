@@ -27,14 +27,14 @@ ${toStringSection.addTabIndentation()}
 
     private fun generateVariablesSection(modelInfo: ModelInfo): String = with(modelInfo) {
         args.joinToString("\n") {
-            "${it.type.rawDartTypeString} get ${it.name} => throw UnimplementedError();"
+            "${it.type.typeString} get ${it.name} => throw UnimplementedError();"
         }
     }
 
     private fun generateFromJsonSection(modelInfo: ModelInfo): String = with(modelInfo) {
         val patternMatchingKeyVariableSection = generatePatternMatchingKeyVariableSection(modelInfo)
         val modelConstructorCallArgsSection = generateModelConstructorCallArgsSection(modelInfo)
-        """static _$className createModelFromJson(json) {
+        """static _$className createModelFromJson(Object json) {
   if (json
       case {
 ${patternMatchingKeyVariableSection.addTabIndentation(4)},

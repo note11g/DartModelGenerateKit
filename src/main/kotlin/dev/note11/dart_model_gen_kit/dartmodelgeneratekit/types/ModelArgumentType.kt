@@ -1,16 +1,12 @@
 package dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types
 
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil.parseGenericType
 
 sealed class ModelArgumentType {
-    private var _nullable: Boolean = false
-    private val nullable: Boolean get() = _nullable
-
-    private lateinit var _rawDartTypeString: String
-    val rawDartTypeString: String get() = _rawDartTypeString
-
-    val dartTypeWithOutNullable: String get() = rawDartTypeString.removeSuffix("?")
-
+    val nullable: Boolean get() = _nullable
+    val typeString: String get() = _typeStringWithNullable
+    val dartTypeWithOutNullable: String get() = typeString.removeSuffix("?")
     val dartTypeOnFromPatternMatching
         get() = when (this) {
             is DString -> "String"
@@ -19,38 +15,67 @@ sealed class ModelArgumentType {
             is DBool -> "bool"
             is DDateTime -> "int"
             is DCustom -> "Object"
-            is DList ->
+            is DList -> {
                 if (valueType is NeedParseModelArgumentType) "List"
-                else "List<${valueType.rawDartTypeString}>"
-            is DMap ->
-                if (valueType is NeedParseModelArgumentType) "Map"
-                else "Map<${keyType.rawDartTypeString}, ${valueType.rawDartTypeString}>"
+                else "List<${valueType.typeString}>"
+            }
+
+            is DMap -> {
+                assert(keyType !is NeedParseModelArgumentType)
+                if (valueType is NeedParseModelArgumentType) "Map<${keyType.typeString}, dynamic>"
+                else "Map<${keyType.typeString}, ${valueType.typeString}>"
+            }
         } + if (nullable) "?" else ""
 
-    fun getFromJsonConstructorParam(name: String): String = when (this) {
-        !is NeedParseModelArgumentType -> name
-        is DDateTime -> "DateTime.fromMillisecondsSinceEpoch($name)"
-        is DCustom -> "${typeStr}.fromJson($name)"
-        is DList ->
-            if (valueType !is NeedParseModelArgumentType) name
-            else "$name.map((e) => ${valueType.getFromJsonConstructorParam("e")}).toList()"
+    private lateinit var _typeStringWithNullable: String
+    private var _nullable: Boolean = false
 
-        is DMap ->
-            if (valueType !is NeedParseModelArgumentType) name
-            else "Map.fromEntries($name.entries.map((e) => ${valueType.getFromJsonConstructorParam("e")}))"
+    fun getFromJsonConstructorParam(name: String): String {
+        return when (this) {
+            !is NeedParseModelArgumentType -> name
+            is DDateTime -> nullCheckExpressionCreator(name, "DateTime.fromMillisecondsSinceEpoch($name)")
+            is DCustom -> nullCheckExpressionCreator(name, "${typeStr}.fromJson($name)")
+            is DList -> {
+                if (valueType !is NeedParseModelArgumentType) name
+                else {
+                    val nameWithNullOperator = if (nullable) "$name?" else name
+                    "$nameWithNullOperator.map((e) => ${valueType.getFromJsonConstructorParam("e")}).toList()"
+                }
+            }
+
+            is DMap -> {
+                if (valueType !is NeedParseModelArgumentType) name
+                else nullCheckExpressionCreator(
+                    name, "Map.fromEntries($name.map((k, v)" +
+                            " => MapEntry(k, ${valueType.getFromJsonConstructorParam("v")})).entries)"
+                )
+            }
+        }
     }
 
-    fun getToJsonValue(name: String): String = when (this) {
-        !is NeedParseModelArgumentType -> name
-        is DDateTime -> "$name.millisecondsSinceEpoch"
-        is DCustom -> "$name.toJson()"
-        is DList ->
-            if (valueType !is NeedParseModelArgumentType) name
-            else "$name.map((e) => ${valueType.getToJsonValue("e")}).toList()"
+    fun getToJsonValue(name: String): String {
+        val nameWithNullOperator = if (nullable) "$name?" else name
+        return when (this) {
+            !is NeedParseModelArgumentType -> name
+            is DDateTime -> "$nameWithNullOperator.millisecondsSinceEpoch"
+            is DCustom -> "$nameWithNullOperator.toJson()"
+            is DList -> {
+                if (valueType !is NeedParseModelArgumentType) name
+                else "$nameWithNullOperator.map((e) => ${valueType.getToJsonValue("e")}).toList()"
+            }
 
-        is DMap ->
-            if (valueType !is NeedParseModelArgumentType) name
-            else "Map.fromEntries($name.map((k, v) => MapEntry(k, ${valueType.getToJsonValue("v")})))"
+            is DMap -> {
+                if (valueType !is NeedParseModelArgumentType) name
+                else nullCheckExpressionCreator(
+                    name,
+                    "Map.fromEntries($name.map((k, v) => " + "MapEntry(k, ${valueType.getToJsonValue("v")})).entries)"
+                )
+            }
+        }
+    }
+
+    private fun nullCheckExpressionCreator(arg: String, parser: String): String {
+        return if (nullable) "$arg != null ? $parser : null" else parser
     }
 
     class DString : ModelArgumentType()
@@ -70,34 +95,30 @@ sealed class ModelArgumentType {
     class DCustom(val typeStr: String) : NeedParseModelArgumentType()
 
     companion object {
-        fun parse(typeString: String): ModelArgumentType? {
-            val typeString = typeString.trim()
-            val nullable = typeString.endsWith('?')
-            return when (typeString.removeSuffix("?")) {
+        fun parse(rawTypeString: String): ModelArgumentType {
+            val trimmedTypeString = rawTypeString.trim()
+            val nullable = trimmedTypeString.endsWith('?')
+            val typeStringWithoutNull = rawTypeString.removeSuffix("?")
+            return when (typeStringWithoutNull) {
                 "String" -> DString()
                 "int" -> DInt()
                 "double" -> DDouble()
                 "bool" -> DBool()
                 "DateTime" -> DDateTime()
-                else -> {
-                    if (typeString.startsWith("List<")) {
-                        val valueType = parse(typeString.removePrefix("List<").removeSuffix(">")) ?: return null
-                        DList(valueType)
-                    } else if (typeString.startsWith("Map<")) {
-                        val innerTypes = typeString.removePrefix("Map<").removeSuffix(">").split(',')
-                        val keyType = parse(innerTypes[0])
-                        val valueType = parse(innerTypes[1])
-                        if (keyType == null || valueType == null) return null
-                        DMap(keyType, valueType)
-                    } else if (!DartLangParseUtil.isValidClassOrVariable(typeString)) {
-                        // unsupported type
-                        return null
+                else -> with(typeStringWithoutNull) {
+                    if (startsWith("List<")) {
+                        DList(valueType = parse(parseGenericType(this).first()))
+                    } else if (startsWith("Map<")) {
+                        val innerTypes = parseGenericType(this)
+                        DMap(keyType = parse(innerTypes[0]), valueType = parse(innerTypes[1]))
+                    } else if (DartLangParseUtil.isValidClassOrVariable(this)) {
+                        DCustom(this)
                     } else {
-                        DCustom(typeString)
+                        throw Exception("Unsupported type: $trimmedTypeString")
                     }
                 }
             }.apply {
-                this._rawDartTypeString = typeString
+                this._typeStringWithNullable = trimmedTypeString
                 if (nullable) this._nullable = true
             }
         }
