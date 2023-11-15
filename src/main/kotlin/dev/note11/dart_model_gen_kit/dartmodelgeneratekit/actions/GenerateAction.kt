@@ -8,23 +8,36 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
-import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ModelInfo
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.gen.enum_model.EnumCodeGeneratorImpl
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.gen.model.ModelCodeGeneratorImpl
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.gen.model.ModelExtensionGenerator
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.gen.model.ModelSubClassGenerator
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ClassInfo
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.DartLangParseUtil
 
 class GenerateAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val document = getDocument(e) ?: return
         saveDocument(document)
-        val clearedEditorText = DartLangParseUtil.removeCodeComments(document.text)
-        val modelInfo = parseModelInfo(clearedEditorText) ?: return
 
-        val originalCode = originalModelCodeWithoutGeneratedCodes(document.text)
-        val generatedCode = generateModelExtendsCode(modelInfo)
+        val resultCode: String
+        try {
+            val clearedEditorText = DartLangParseUtil.removeCodeComments(document.text)
+            val modelInfo = ClassInfo.parseFromCodes(clearedEditorText) ?: return
+
+            resultCode = when (modelInfo) {
+                is ClassInfo.ModelInfo -> ModelCodeGeneratorImpl().generate(document.text, modelInfo)
+                is ClassInfo.EnumInfo -> EnumCodeGeneratorImpl().generate(document.text, modelInfo)
+            }
+        } catch (ex: Exception) {
+            e.openAlert("Model Generation Failed! : (${ex.message})")
+            return
+        }
 
         runUndoTransparentWriteAction {
-            document.setText(originalCode + generatedCode)
+            document.setText(resultCode)
             saveDocument(document)
-            openAlert("Model Generated! 😉", e)
+            e.openAlert("Model Generated! 😉")
         }
     }
 
@@ -36,43 +49,12 @@ class GenerateAction : AnAction() {
         FileDocumentManager.getInstance().saveDocument(document)
     }
 
-    private fun openAlert(message: String, e: AnActionEvent) {
+    private fun AnActionEvent.openAlert(message: String) {
         val notification = NotificationGroupManager.getInstance()
             .getNotificationGroup("Dart Model Gen Alert")
             .createNotification(message, NotificationType.INFORMATION)
             .setImportant(false)
-        notification.notify(e.project)
-    }
-
-    private fun parseModelInfo(fullCodes: String): ModelInfo? {
-        val className = DartLangParseUtil.extractClassName(fullCodes) ?: return null
-        val args = DartLangParseUtil.findModelArgs(fullCodes, className)
-        if (args.isEmpty()) return null
-        return ModelInfo(className, args)
-    }
-
-    private fun generateModelExtendsCode(modelInfo: ModelInfo): String {
-        return commentSectionText +
-                ModelSubClassGenerator.invoke(modelInfo) + "\n\n" +
-                ModelExtensionGenerator.invoke(modelInfo)
-    }
-
-    private fun originalModelCodeWithoutGeneratedCodes(fullCodes: String): String {
-        if (alreadyCodeGenerated(fullCodes)) return removeGeneratedCodes(fullCodes)
-        return fullCodes
-    }
-
-    private fun alreadyCodeGenerated(fullCodes: String): Boolean {
-        return fullCodes.contains(commentSectionText)
-    }
-
-    private fun removeGeneratedCodes(fullCodes: String): String {
-        return fullCodes.substringBefore(commentSectionText)
-    }
-
-    companion object {
-        private const val commentSectionText = "\n///\n" +
-                "/// ----- Private Codes -----\n" + "///\n\n"
+        notification.notify(this.project)
     }
 }
 

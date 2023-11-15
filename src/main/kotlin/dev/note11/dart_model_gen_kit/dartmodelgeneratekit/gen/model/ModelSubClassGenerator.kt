@@ -1,6 +1,6 @@
-package dev.note11.dart_model_gen_kit.dartmodelgeneratekit.actions
+package dev.note11.dart_model_gen_kit.dartmodelgeneratekit.gen.model
 
-import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ModelInfo
+import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.types.ClassInfo.ModelInfo
 import dev.note11.dart_model_gen_kit.dartmodelgeneratekit.util.addTabIndentation
 
 object ModelSubClassGenerator {
