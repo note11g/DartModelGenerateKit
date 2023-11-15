@@ -1,2 +1,5 @@
-## 0.1.0-dev.1
-- Initial version, Not Production Ready.
+## 0.1.1
+- Support EnumVal. (`@EnumVal` or `@enumVal`)
+
+## 0.1.0
+- Initial version, Production Ready.

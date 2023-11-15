@@ -18,3 +18,9 @@ class CustomKey {
 class DefaultVal {
   const DefaultVal(dynamic value);
 }
+
+class EnumVal {
+  const EnumVal();
+}
+
+const EnumVal enumVal = EnumVal();
