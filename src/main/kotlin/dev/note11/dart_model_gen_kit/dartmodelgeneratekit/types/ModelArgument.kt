@@ -8,8 +8,9 @@ data class ModelArgument(
     val type: ModelArgumentType,
     val isRequired: Boolean,
     private val defaultValue: String?,
-    val key: String,
+    private val key: String,
 ) {
+    val keys: List<String> = key.split('.').map { it.trim() }
 
     val actualDefaultValue: String?
         get() = defaultValue?.run {
