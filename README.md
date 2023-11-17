@@ -11,12 +11,12 @@ Pub.dev :
 1. add dependency on pubspec.yaml
 
 ```yaml
-model_gen_kit: ^0.1.0
+model_gen_kit: ^0.1.1
 ```
 
 2.  On IntelliJ(or Android Studio), Install Plugin "Dart Model Generate Kit" ([Install Link](https://plugins.jetbrains.com/plugin/22714-dartmodelgeneratekit))
 
 ### Usage
-1. Create empty dart file and write "gm" and press enter.
+1. Create empty dart file and write "gm" and press enter. (not need for enum creation)
 2. Write your model class name and arguments.
-3. Press "option(alt) + shift + enter" to generate model class.
+3. Press "option(alt) + m" to generate model class.

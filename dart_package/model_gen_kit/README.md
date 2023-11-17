@@ -1,7 +1,24 @@
 ## Model Gen Kit
 Auto Generate Dart Model Class with JsonSerializable, copyWith and toString() method using IntelliJ Plugin.
 
-1. On IntelliJ(or Android Studio), Install Plugin "Dart Model Generate Kit" : https://plugins.jetbrains.com/plugin/22714-dartmodelgeneratekit
-2. Create empty dart file and write "gm" and press enter.
-3. Write your model class name and arguments.
-4. option + shift + enter (or alt + shift + enter) to generate model class.
+(not depend on build_runner.)
+
+Jetbrain Plugin :
+[![jetbrain plugin](https://img.shields.io/jetbrains/plugin/d/22714-dartmodelgeneratekit.svg)](https://plugins.jetbrains.com/plugin/22714-dartmodelgeneratekit)
+
+Pub.dev :
+[![pub package](https://img.shields.io/pub/v/model_gen_kit.svg?color=4285F4)](https://pub.dev/packages/model_gen_kit)
+
+### Install
+1. add dependency on pubspec.yaml
+
+```yaml
+model_gen_kit: ^0.1.1
+```
+
+2.  On IntelliJ(or Android Studio), Install Plugin "Dart Model Generate Kit" ([Install Link](https://plugins.jetbrains.com/plugin/22714-dartmodelgeneratekit))
+
+### Usage
+1. Create empty dart file and write "gm" and press enter. (not need for enum creation)
+2. Write your model class name and arguments.
+3. Press "option(alt) + m" to generate model class.

@@ -14,14 +14,36 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Auto Generate Dart Model Class with JsonSerializable, copyWith and toString() method.
+<h1>Model Gen Kit</h1>
+<p>
+    Auto Generate Dart Model Class with JsonSerializable, copyWith and toString() method using IntelliJ Plugin.
+    <br/>
+    (not depend on build_runner.)
+</p>
 
-    <h4>How to use</h4>
-   <ol>
-      <li>Create empty dart file and write "gm" and press enter.</li>
-      <li>Write your model class name and arguments.</li>
-      <li>Press "option(alt) + m" to generate model class. (or press "option(alt) + shift + enter" and select generate model class.)</li>
-   </ol>
+
+
+<div>
+    Pub.dev : <a href="https://pub.dev/packages/model_gen_kit">
+        <img src="https://img.shields.io/pub/v/model_gen_kit.svg?color=4285F4" alt="pub package">
+    </a>
+</div>
+
+<h3>Install</h3>
+1. add dependency on pubspec.yaml
+<pre>
+<code>
+model_gen_kit: ^0.1.1
+</code>
+</pre>
+
+2.  On IntelliJ(or Android Studio), Install Plugin "Dart Model Generate Kit"
+
+<h3>Usage</h3>
+1. Create empty dart file and write "gm" and press enter. (not need for enum creation)
+2. Write your model class name and arguments.
+3. Press "option(alt) + m" to generate model class.
+
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
