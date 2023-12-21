@@ -16,8 +16,9 @@ sealed class ModelArgumentType {
             is DDateTime -> "int"
             is DCustom -> "Object"
             is DList -> {
-                if (valueType is NeedParseModelArgumentType) "List"
-                else "List<${valueType.typeString}>"
+                "List" // json parsing could be List<dynamic>
+//                if (valueType is NeedParseModelArgumentType) "List"
+//                else "List<${valueType.typeString}>"
             }
 
             is DMap -> {
@@ -36,7 +37,8 @@ sealed class ModelArgumentType {
             is DDateTime -> nullCheckExpressionCreator(name, "DateTime.fromMillisecondsSinceEpoch($name)")
             is DCustom -> nullCheckExpressionCreator(name, "${typeStr}.fromJson($name)")
             is DList -> {
-                if (valueType !is NeedParseModelArgumentType) name
+//                if (valueType !is NeedParseModelArgumentType) name
+                if (valueType !is NeedParseModelArgumentType) "$name.cast<String>()"
                 else {
                     val nameWithNullOperator = if (nullable) "$name?" else name
                     "$nameWithNullOperator.map((e) => ${valueType.getFromJsonConstructorParam("e")}).toList()"
