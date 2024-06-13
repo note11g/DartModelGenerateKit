@@ -13,7 +13,7 @@ Pub.dev :
 1. add dependency on pubspec.yaml
 
 ```yaml
-model_gen_kit: ^0.1.1
+model_gen_kit: ^0.1.2
 ```
 
 2.  On IntelliJ(or Android Studio), Install Plugin "Dart Model Generate Kit" ([Install Link](https://plugins.jetbrains.com/plugin/22714-dartmodelgeneratekit))
