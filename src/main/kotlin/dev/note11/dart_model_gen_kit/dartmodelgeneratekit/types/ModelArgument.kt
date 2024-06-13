@@ -29,6 +29,9 @@ data class ModelArgument(
             val customKey = getCustomKeyValue(cleanedCode)
             if (customKey != null) cleanedCode = cleanUpCustomKeyValue(cleanedCode)
 
+            val isSnakeCaseKey = detectSnakeCaseKey(cleanedCode)
+            if (isSnakeCaseKey) cleanedCode = cleanUpSnakeCaseKey(cleanedCode)
+
             val isRequired = detectRequiredKeyword(cleanedCode)
             if (isRequired) {
                 cleanedCode = cleanUpRequiredKeyword(cleanedCode)
@@ -41,7 +44,13 @@ data class ModelArgument(
 
             val type = getType(cleanedCode)
 
-            return ModelArgument(argName, type, isRequired, defaultValue, customKey ?: argName)
+            val key = customKey
+                ?: if (isSnakeCaseKey) changeLowerCamelCaseToSnakeCase(argName)
+                else argName
+
+            return ModelArgument(
+                argName, type, isRequired, defaultValue, key
+            )
         }
 
         private fun getDefaultValue(input: String): String? {
@@ -62,6 +71,15 @@ data class ModelArgument(
             return input.replace("@CustomKey\\(\"(.*?)\"\\)".toRegex(), "").trim()
         }
 
+        private fun detectSnakeCaseKey(input: String): Boolean {
+            val pattern = "(@SnakeCaseKey\\(\\))|(@snakeKey)".toRegex()
+            return pattern.containsMatchIn(input)
+        }
+
+        private fun cleanUpSnakeCaseKey(input: String): String {
+            return input.replace("(@SnakeCaseKey\\(\\))|(@snakeKey)".toRegex(), "").trim()
+        }
+
         private fun detectRequiredKeyword(input: String): Boolean {
             return input.startsWith("required ")
         }
@@ -80,6 +98,17 @@ data class ModelArgument(
 
         private fun getType(input: String): ModelArgumentType {
             return ModelArgumentType.parse(input.trim())
+        }
+
+        private fun changeLowerCamelCaseToSnakeCase(str: String): String {
+            return str.fold(StringBuilder()) { acc, char ->
+                if (char.isUpperCase()) {
+                    if (acc.isNotEmpty()) acc.append('_')
+                    acc.append(char.lowercaseChar())
+                } else {
+                    acc.append(char)
+                }
+            }.toString()
         }
     }
 }
