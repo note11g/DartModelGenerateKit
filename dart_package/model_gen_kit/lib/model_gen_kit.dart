@@ -11,6 +11,8 @@ class ParseFailedException implements Exception {
   }
 }
 
+
+/// define custom key at model property.
 class CustomKey {
   const CustomKey(String key);
 }
@@ -40,12 +42,48 @@ class SnakeCaseKey {
 ///
 /// added on `model_gen_kit 0.1.2`
 const SnakeCaseKey snakeKey = SnakeCaseKey();
+
+/// Default value on property
 class DefaultVal {
   const DefaultVal(dynamic value);
 }
 
+/// define key value on enum properties.
+///
+/// `@CustomKey` enum version.
+///
+/// ```dart
+/// enum Type {
+///   a("A"),
+///   b("B");
+///
+///   @EnumVal()
+///   final String key;
+///
+///   const Type(this.key);
+///
+///   /// fromJson / toJson will be auto generated with opt(alt)+m
+/// }
+///
 class EnumVal {
   const EnumVal();
 }
 
+/// define key value on enum properties.
+///
+/// `@CustomKey` enum version.
+///
+/// ```dart
+/// enum Type {
+///   a("A"),
+///   b("B");
+///
+///   @EnumVal()
+///   final String key;
+///
+///   const Type(this.key);
+///
+///   /// fromJson / toJson will be auto generated with opt(alt)+m
+/// }
+///
 const EnumVal enumVal = EnumVal();
