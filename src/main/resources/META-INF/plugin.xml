@@ -33,7 +33,7 @@
 1. add dependency on pubspec.yaml
 <pre>
 <code>
-model_gen_kit: ^0.1.1
+model_gen_kit: ^0.1.2
 </code>
 </pre>
 
