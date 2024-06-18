@@ -2,15 +2,16 @@ library model_gen_kit;
 
 class ParseFailedException implements Exception {
   final String modelName;
+  final Object rawData;
 
-  const ParseFailedException(this.modelName);
+  const ParseFailedException(this.modelName, this.rawData);
 
   @override
   String toString() {
-    return 'ParseFailedException($modelName is not matched from json data)';
+    return 'ParseFailedException($modelName is not matched from json data)\n'
+        '*** rawData: $rawData';
   }
 }
-
 
 /// define custom key at model property.
 class CustomKey {
@@ -87,3 +88,18 @@ class EnumVal {
 /// }
 ///
 const EnumVal enumVal = EnumVal();
+
+/// define custom parser on property.
+///
+/// e.g.
+///
+/// ```dart
+///  @CustomParser(int.parse) required int id;
+///  @CustomParser(Datetime.parse) required DateTime createdAt;
+///  @CustomParser(MultipartFile.parse) required List<MultipartFile> files;
+/// ```
+class CustomParser {
+  final Function(dynamic r) parser;
+
+  const CustomParser(this.parser);
+}
