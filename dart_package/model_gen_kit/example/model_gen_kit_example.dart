@@ -63,7 +63,7 @@ mixin _UserExtension {
   String get name => throw UnimplementedError();
   String get email => throw UnimplementedError();
 
-  static _User createModelFromJson(json) {
+  static _User createModelFromJson(Object json) {
     if (json
         case {
           "uid": int id,
@@ -76,7 +76,7 @@ mixin _UserExtension {
         email: email,
       );
     } else {
-      throw const ParseFailedException("User");
+      throw ParseFailedException("User", json);
     }
   }
 
