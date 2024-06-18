@@ -47,7 +47,7 @@ ${patternMatchingKeyVariableSection.addTabIndentation(4)}
 ${modelConstructorCallArgsSection.addTabIndentation(3)},
     );
   } else {
-    throw const ParseFailedException("$className");
+    throw ParseFailedException("$className", json);
   }
 }"""
     }

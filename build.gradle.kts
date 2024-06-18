@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.note11.dart_model_gen_kit"
-version = "0.3.3"
+version = "0.3.4"
 
 repositories {
     mavenCentral()
