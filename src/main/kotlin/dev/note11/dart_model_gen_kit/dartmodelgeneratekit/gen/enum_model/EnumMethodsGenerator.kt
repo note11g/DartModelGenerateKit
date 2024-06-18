@@ -18,7 +18,7 @@ factory $className.fromJson(Object json) {
   for (final value in values) {
     if (json == value.$jsonValue) return value;
   }
-  throw const ParseFailedException("$className");
+  throw ParseFailedException("$className", json);
 }
 """
     }
